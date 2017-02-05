@@ -666,7 +666,7 @@ mod tests {
         let mut tera = Tera::default();
         tera.add_raw_template("hello", content).unwrap();
 
-        tera.render("hello", context)
+        tera.render("hello", &context)
     }
 
     #[test]
@@ -674,7 +674,7 @@ mod tests {
         let mut tera = Tera::default();
         tera.add_raw_template("world", "world").unwrap();
         tera.add_raw_template("hello", "<h1>Hello {% include \"world\" %}</h1>").unwrap();
-        let result = tera.render("hello", Context::new());
+        let result = tera.render("hello", &Context::new());
         assert_eq!(result.unwrap(), "<h1>Hello world</h1>".to_owned());
     }
 
@@ -871,7 +871,7 @@ mod tests {
         context.add("bad", &"<script>alert('pwnd');</script>");
         let mut tera = Tera::default();
         tera.add_raw_template("hello.html", "{{bad}}").unwrap();
-        let result = tera.render("hello.html", context);
+        let result = tera.render("hello.html", &context);
 
         assert_eq!(result.unwrap(), "&lt;script&gt;alert(&#x27;pwnd&#x27;);&lt;&#x2F;script&gt;".to_string());
     }
@@ -882,7 +882,7 @@ mod tests {
         context.add("bad", &"<script>alert('pwnd');</script>");
         let mut tera = Tera::default();
         tera.add_raw_template("hello.sql", "{{bad}}").unwrap();
-        let result = tera.render("hello.sql", context);
+        let result = tera.render("hello.sql", &context);
 
         assert_eq!(result.unwrap(), "<script>alert('pwnd');</script>".to_string());
     }
@@ -893,7 +893,7 @@ mod tests {
         context.add("bad", &"<script>alert('pwnd');</script>");
         let mut tera = Tera::default();
         tera.add_raw_template("hello.html", "{{ bad | safe }}").unwrap();
-        let result = tera.render("hello.html", context);
+        let result = tera.render("hello.html", &context);
 
         assert_eq!(result.unwrap(), "<script>alert('pwnd');</script>".to_string());
     }
@@ -906,7 +906,7 @@ mod tests {
             ("parent", "{% extends \"grandparent\" %}{% block hey %}hi and grandma says {{ super() }}{% endblock hey %}"),
             ("child", "{% extends \"parent\" %}{% block hey %}dad says {{ super() }}{% endblock hey %}{% block ending %}{{ super() }} with love{% endblock ending %}"),
         ]).unwrap();
-        let result = tera.render("child", Context::new());
+        let result = tera.render("child", &Context::new());
 
         assert_eq!(result.unwrap(), "dad says hi and grandma says hello sincerely with love".to_string());
     }
@@ -919,7 +919,7 @@ mod tests {
             ("parent", "{% extends \"grandparent\" %}{% block hey %}hi and grandma says {{ super() }} {% block ending %}sincerely{% endblock ending %}{% endblock hey %}"),
             ("child", "{% extends \"parent\" %}{% block hey %}dad says {{ super() }}{% endblock hey %}{% block ending %}{{ super() }} with love{% endblock ending %}"),
         ]).unwrap();
-        let result = tera.render("child", Context::new());
+        let result = tera.render("child", &Context::new());
 
         assert_eq!(result.unwrap(), "dad says hi and grandma says hello sincerely with love".to_string());
     }
@@ -932,7 +932,7 @@ mod tests {
             ("tpl", "{% import \"macros\" as macros %}{% block hey %}{{macros::hello()}}{% endblock hey %}"),
         ]).unwrap();
 
-        let result = tera.render("tpl", Context::new());
+        let result = tera.render("tpl", &Context::new());
 
         assert_eq!(result.unwrap(), "Hello".to_string());
     }
@@ -948,7 +948,7 @@ mod tests {
             ("child", "{% extends \"parent\" %}{% import \"macros2\" as macros %}{% block hey %}{{super()}}/{{macros::hi()}}{% endblock hey %}"),
         ]).unwrap();
 
-        let result = tera.render("child", Context::new());
+        let result = tera.render("child", &Context::new());
 
         assert_eq!(result.unwrap(), "Hello/Hi".to_string());
     }
@@ -964,7 +964,7 @@ mod tests {
             ("child", "{% extends \"parent\" %}{% import \"macros2\" as macros2 %}{% block hey %}{{super()}}/{{macros2::hi()}}{% endblock hey %}"),
         ]).unwrap();
 
-        let result = tera.render("child", Context::new());
+        let result = tera.render("child", &Context::new());
 
         assert_eq!(result.unwrap(), "Hello/Hi".to_string());
     }
@@ -978,7 +978,7 @@ mod tests {
             ("child", "{% extends \"grandparent\" %}{% import \"macros\" as macros %}{% block hey %}{{super()}}/{{macros::hello()}}{% endblock hey %}"),
         ]).unwrap();
 
-        let result = tera.render("child", Context::new());
+        let result = tera.render("child", &Context::new());
 
         assert_eq!(result.unwrap(), "Hello/Hello".to_string());
     }
@@ -989,7 +989,7 @@ mod tests {
         context.add("logged_in", &false);
         let mut tera = Tera::default();
         tera.add_raw_template("hello.html", "{% if not logged_in %}Login{% endif %}").unwrap();
-        let result = tera.render("hello.html", context);
+        let result = tera.render("hello.html", &context);
 
         assert_eq!(result.unwrap(), "Login".to_string());
     }
@@ -998,7 +998,7 @@ mod tests {
     fn test_render_not_condition_simple_value_does_not_exist() {
         let mut tera = Tera::default();
         tera.add_raw_template("hello.html", "{% if not logged_in %}Login{% endif %}").unwrap();
-        let result = tera.render("hello.html", Context::new());
+        let result = tera.render("hello.html", &Context::new());
 
         assert_eq!(result.unwrap(), "Login".to_string());
     }
@@ -1010,7 +1010,7 @@ mod tests {
         context.add("active", &true);
         let mut tera = Tera::default();
         tera.add_raw_template("hello.html", "{% if not logged_in and active %}Login{% endif %}").unwrap();
-        let result = tera.render("hello.html", context);
+        let result = tera.render("hello.html", &context);
 
         assert_eq!(result.unwrap(), "Login".to_string());
     }
@@ -1022,7 +1022,7 @@ mod tests {
         context.add("active", &true);
         let mut tera = Tera::default();
         tera.add_raw_template("hello.html", "{% if not active or number_users > 10 %}Login{% endif %}").unwrap();
-        let result = tera.render("hello.html", context);
+        let result = tera.render("hello.html", &context);
 
         assert_eq!(result.unwrap(), "Login".to_string());
     }
@@ -1034,7 +1034,7 @@ mod tests {
             ("tpl", "{{ 1 + true }}"),
         ]).unwrap();
 
-        let result = tera.render("tpl", Context::new());
+        let result = tera.render("tpl", &Context::new());
 
         assert_eq!(
             result.unwrap_err().iter().nth(0).unwrap().description(),
@@ -1050,7 +1050,7 @@ mod tests {
             ("tpl", "{% import \"macros\" as macros %}{{ macro::hello() }}"),
         ]).unwrap();
 
-        let result = tera.render("tpl", Context::new());
+        let result = tera.render("tpl", &Context::new());
 
         assert_eq!(
             result.unwrap_err().iter().nth(0).unwrap().description(),
@@ -1066,7 +1066,7 @@ mod tests {
             ("child", "{% extends \"parent\" %}{% block bob %}Hey{% endblock bob %}"),
         ]).unwrap();
 
-        let result = tera.render("child", Context::new());
+        let result = tera.render("child", &Context::new());
 
         assert_eq!(
             result.unwrap_err().iter().nth(0).unwrap().description(),
@@ -1082,7 +1082,7 @@ mod tests {
             ("child", "{% extends \"parent\" %}{% block bob %}{{ super() }}Hey{% endblock bob %}"),
         ]).unwrap();
 
-        let result = tera.render("child", Context::new());
+        let result = tera.render("child", &Context::new());
 
         assert_eq!(
             result.unwrap_err().iter().nth(0).unwrap().description(),
@@ -1099,7 +1099,7 @@ mod tests {
             ("child", "{% extends \"parent\" %}{% block bob %}{{ super() }}Hey{% endblock bob %}"),
         ]).unwrap();
 
-        let result = tera.render("child", Context::new());
+        let result = tera.render("child", &Context::new());
 
         assert_eq!(
             result.unwrap_err().iter().nth(0).unwrap().description(),
